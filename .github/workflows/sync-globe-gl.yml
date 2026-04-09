@@ -31,18 +31,32 @@ jobs:
         working-directory: src/globe.gl
         run: npm install && npm run build
 
-      - name: Copy artifact and archive source
+      - name: Copy lock file and archive source
         run: |
           cp src/globe.gl/package-lock.json globe.gl/package-lock.json
-          cp src/globe.gl/dist/globe.gl.min.js globe.gl/globe.gl.min.js
           cd src && zip -r ../globe.gl/globe.gl.src.zip globe.gl
 
-      - name: Commit and push if changed
+      - name: Commit lock and source to main if changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add globe.gl/globe.gl.min.js globe.gl/globe.gl.src.zip globe.gl/package-lock.json
+          git add globe.gl/globe.gl.src.zip globe.gl/package-lock.json
           git diff --cached --quiet && exit 0
           UPSTREAM_SHA=$(git -C src/globe.gl rev-parse HEAD)
-          git commit -m "chore: update artifacts ${UPSTREAM_SHA:0:7}"
+          git commit -m "chore(globe.gl): sync lock + source (${UPSTREAM_SHA:0:7})"
           git push
+
+      - name: Deploy globe.gl.min.js to gh-pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          UPSTREAM_SHA=$(git -C src/globe.gl rev-parse HEAD)
+          git fetch origin gh-pages || true
+          git checkout gh-pages || git checkout --orphan gh-pages
+          mkdir -p globe.gl
+          cp src/globe.gl/dist/globe.gl.min.js globe.gl/globe.gl.min.js
+          git add globe.gl/globe.gl.min.js
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(globe.gl): publish min.js (${UPSTREAM_SHA:0:7})"
+          git push origin gh-pages
+          git checkout main
