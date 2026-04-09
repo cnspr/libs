@@ -21,6 +21,9 @@ jobs:
       - name: Clone globe.gl source
         run: git clone https://github.com/vasturiano/globe.gl src/globe.gl
 
+      - name: Debug package-lock.json
+        run: find . -name package-lock.json
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
