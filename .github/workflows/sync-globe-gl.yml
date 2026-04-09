@@ -21,14 +21,11 @@ jobs:
       - name: Clone globe.gl source
         run: git clone https://github.com/vasturiano/globe.gl src/globe.gl
 
-      - name: Restore package-lock.json
-        run: cp package-lock.json src/globe.gl/package-lock.json
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: globe.gl/package-lock.json
 
       - name: Install and build
         working-directory: src/globe.gl
@@ -36,22 +33,23 @@ jobs:
 
       - name: Update package-lock.json if changed
         run: |
-          cp src/globe.gl/package-lock.json package-lock.json
-          git add package-lock.json
+          cp src/globe.gl/package-lock.json globe.gl/package-lock.json
+          git add globe.gl/package-lock.json
           git diff --cached --quiet && exit 0
           git commit -m "chore: update package-lock.json"
           git push
 
-      - name: Copy artifact
+      - name: Copy artifact and archive source
         run: |
           mkdir -p globe.gl
           cp src/globe.gl/dist/globe.gl.min.js globe.gl/globe.gl.min.js
+          cd src && zip -r ../globe.gl/globe.gl.src.zip globe.gl
 
       - name: Commit and push if changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/globe.gl globe.gl/globe.gl.min.js
+          git add globe.gl/globe.gl.min.js globe.gl/globe.gl.src.zip
           git diff --cached --quiet && echo "No changes" && exit 0
           UPSTREAM_SHA=$(git -C src/globe.gl rev-parse HEAD)
           git commit -m "chore: sync globe.gl ${UPSTREAM_SHA:0:7}"
