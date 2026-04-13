@@ -52,8 +52,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout main
           cp src/globe.gl/package-lock.json globe.gl/package-lock.json
-          ( cd src && rm -rf globe.gl/dist globe.gl/node_modules && zip -r ../globe.gl/globe.gl.src.zip globe.gl )
-          ls -l globe.gl/globe.gl.src.zip 1>&2
+          ( cd src && rm -rf globe.gl/dist globe.gl/node_modules globe.gl/example && zip -r ../globe.gl/globe.gl.src.zip globe.gl )
           git add globe.gl/globe.gl.src.zip globe.gl/package-lock.json
           git diff --cached --quiet && exit 0
           UPSTREAM_SHA=$(git -C src/globe.gl rev-parse HEAD)
